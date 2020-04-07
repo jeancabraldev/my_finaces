@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "521102451799",
+    "firebase_url": "https://my-finances-4db0a.firebaseio.com",
+    "project_id": "my-finances-4db0a",
+    "storage_bucket": "my-finances-4db0a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:521102451799:android:05735985f006fb06c6af12",
+        "android_client_info": {
+          "package_name": "br.com.code4line.myFinances"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "521102451799-8ceg5q9th74ej78qn92u8va0d3lmej3a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "br.com.code4line.myFinances",
+            "certificate_hash": "b21459ca16be9b653529fabda99a44acbb390f2b"
+          }
+        },
+        {
+          "client_id": "521102451799-ddb2i4kfcunn01vaf49j601ovqo45abv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDhTuPwZFpZ5Wboh_4Tu0436cVY9652x3M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "521102451799-ddb2i4kfcunn01vaf49j601ovqo45abv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
