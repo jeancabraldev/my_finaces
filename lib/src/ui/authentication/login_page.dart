@@ -1,8 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:myFinances/src/blocs/authentication/authentication_bloc.dart';
+import 'package:myFinances/src/blocs/authentication/authentication_bloc_provider.dart';
 import 'package:myFinances/src/ui/widgets/form_field_main.dart';
 import 'package:myFinances/src/utils/values/colors.dart';
+import 'package:myFinances/src/utils/values/strings.dart';
 
 //Controlando animações
 const double minHeight = 60;
@@ -25,6 +28,11 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMixin {
 
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  //Instanciando Authentication Bloc
+  AuthenticationBloc _authBloc;
+
   //Controlando as animações
   AnimationController _animationController;
 
@@ -38,6 +46,12 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   double _signUpContainerWidth = minWidth;
 
   double _formsContainerMargin = maxFormsContainerMargin;
+
+  @override
+  void didChangeDependencies() {
+    _authBloc = AuthenticationBlocProvider.of(context);
+    super.didChangeDependencies();
+  }
 
   @override
   void initState() { 
@@ -106,9 +120,16 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
   //Animando o tamanho dos botões entre o minimo e o maximo
   double lerp(double min, double max) => lerpDouble(min, max, _animationController.value);
 
+  //Criando Snak Bar
+  void showErrorMessage(String message) {
+    final snackBar =SnackBar(content: Text(message),duration: Duration(seconds: 2),);
+    _scaffoldKey.currentState.showSnackBar(snackBar);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: ColorConstant.colorMainPurple,
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -207,37 +228,55 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         child: Column(
                                           children: <Widget>[
 
-                                            //Field Nome
-                                            FormFieldMain(
-                                              marginLeft: 20, 
-                                              marginRight: 20, 
-                                              marginTop: 0, 
-                                              textInputType: TextInputType.text, 
-                                              hintText: 'Nome', 
-                                              obscured: false, 
-                                              onChanged: (value){}
+                                            //Nome
+                                            StreamBuilder(
+                                              stream: _authBloc.name,
+                                              builder: (context, snapshot) {
+                                                return FormFieldMain(
+                                                  marginLeft: 20, 
+                                                  marginRight: 20, 
+                                                  marginTop: 0, 
+                                                  textInputType: TextInputType.text, 
+                                                  hintText: 'Nome', 
+                                                  obscured: false, 
+                                                  onChanged: _authBloc.changeName,
+                                                  errorText: snapshot.error,
+                                                );
+                                              }
                                             ),
 
-                                            //Field E-mail
-                                            FormFieldMain(
-                                              marginLeft: 20, 
-                                              marginRight: 20, 
-                                              marginTop: 15, 
-                                              textInputType: TextInputType.emailAddress, 
-                                              hintText: 'E-mail', 
-                                              obscured: false, 
-                                              onChanged: (value){}
+                                            //E-mail
+                                            StreamBuilder(
+                                              stream: _authBloc.email,
+                                              builder: (context, snapshot) {
+                                                return FormFieldMain(
+                                                  marginLeft: 20, 
+                                                  marginRight: 20, 
+                                                  marginTop: 15, 
+                                                  textInputType: TextInputType.emailAddress, 
+                                                  hintText: 'E-mail', 
+                                                  obscured: false, 
+                                                  onChanged: _authBloc.changeEmail,
+                                                  errorText: snapshot.error,
+                                                );
+                                              }
                                             ),
 
-                                            //Field Senha
-                                            FormFieldMain(
-                                              marginLeft: 20, 
-                                              marginRight: 20, 
-                                              marginTop: 15, 
-                                              textInputType: TextInputType.numberWithOptions(), 
-                                              hintText: 'Senha', 
-                                              obscured: true, 
-                                              onChanged: (value){}
+                                            //Password
+                                            StreamBuilder(
+                                              stream: _authBloc.password,
+                                              builder: (context, snapshot) {
+                                                return FormFieldMain(
+                                                  marginLeft: 20, 
+                                                  marginRight: 20, 
+                                                  marginTop: 15, 
+                                                  textInputType: TextInputType.numberWithOptions(), 
+                                                  hintText: 'Senha', 
+                                                  obscured: true, 
+                                                  onChanged: _authBloc.changePassword,
+                                                  errorText: snapshot.error,
+                                                );
+                                              }
                                             ),
 
                                           ],
@@ -245,34 +284,64 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                       ),
                                     ),
 
+                                    //Botão Cadastro
                                     Positioned.fill(
                                       bottom: 15,
                                       child: Align(
                                         alignment: Alignment.bottomCenter,
-                                        child: GestureDetector(
-                                          onTap: () {},
-                                          child: Container(
-                                            alignment: Alignment.center,
-                                            margin: EdgeInsets.only(left: 30, right: 30),
-                                            height: 60,
-                                            width: MediaQuery.of(context).size.width,
-                                            decoration: BoxDecoration(
-                                              color: Colors.transparent,
-                                              border: Border.all(
-                                                width: 1,
-                                                color: ColorConstant.colorMainPurple
-                                              )
-                                            ),
-                                            child: Text(
-                                              'Sign Up',
-                                              style: TextStyle(
-                                                color: ColorConstant.colorMainPurple,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                          ),
+                                        child: StreamBuilder(
+                                          stream: _authBloc.signInStatus,
+                                          builder: (context, snapshot) {
+                                            bool isLoggedIn = snapshot.data;
+                                            /*
+                                            * verificando se o snapshot não contem nenhum dado ou
+                                            * se contem algum erro ou se é nulo - usuário ainda 
+                                            * não está logado
+                                            */
+                                            if(!snapshot.hasData || snapshot.hasError || !isLoggedIn) {
+                                              return GestureDetector(
+                                                onTap: () async {
+                                                  if(_authBloc.validateEmailAndPassword() &&
+                                                      _authBloc.validateName()) {
+                                                    int response = await _authBloc.registerUser();
+                                                    if(response < 0) {
+                                                      //Erro ao se registrar no Firebase
+                                                      showErrorMessage(StringConstants.emailOrPasswordIncorret);
+                                                    } else {
+                                                      showErrorMessage(StringConstants.fillUpFormCorrectly);
+                                                    }
+                                                  }
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  margin: EdgeInsets.only(left: 30, right: 30),
+                                                  height: 60,
+                                                  width: MediaQuery.of(context).size.width,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.transparent,
+                                                    border: Border.all(
+                                                      width: 1,
+                                                      color: ColorConstant.colorMainPurple
+                                                    )
+                                                  ),
+                                                  child: Text(
+                                                    'Sign Up',
+                                                    style: TextStyle(
+                                                      color: ColorConstant.colorMainPurple,
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ); 
+                                            } else {
+                                              return CircularProgressIndicator(
+                                                backgroundColor: Colors.white,
+                                              );
+                                            }
+                                          }
                                         ),
+                                        
                                       ),
                                     ),
 
@@ -343,26 +412,38 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                         child: Column(
                                           children: <Widget>[
 
-                                            //Field E-mail
-                                            FormFieldMain(
-                                              marginLeft: 20, 
-                                              marginRight: 20, 
-                                              marginTop: 15, 
-                                              textInputType: TextInputType.emailAddress, 
-                                              hintText: 'E-mail', 
-                                              obscured: false, 
-                                              onChanged: (value){}
+                                            //E-mail
+                                            StreamBuilder(
+                                              stream: _authBloc.email,
+                                              builder: (contest, snapshot) {
+                                                return FormFieldMain(
+                                                  marginLeft: 20, 
+                                                  marginRight: 20, 
+                                                  marginTop: 15, 
+                                                  textInputType: TextInputType.emailAddress, 
+                                                  hintText: 'E-mail', 
+                                                  obscured: false, 
+                                                  onChanged: _authBloc.changeEmail,
+                                                  errorText: snapshot.error,
+                                                );
+                                              }
                                             ),
 
-                                            //Field Senha
-                                            FormFieldMain(
-                                              marginLeft: 20, 
-                                              marginRight: 20, 
-                                              marginTop: 15, 
-                                              textInputType: TextInputType.numberWithOptions(), 
-                                              hintText: 'Senha', 
-                                              obscured: true, 
-                                              onChanged: (value){}
+                                            //Password
+                                            StreamBuilder(
+                                              stream: _authBloc.password,
+                                              builder: (context, snapshot) {
+                                                return FormFieldMain(
+                                                  marginLeft: 20, 
+                                                  marginRight: 20, 
+                                                  marginTop: 15, 
+                                                  textInputType: TextInputType.numberWithOptions(), 
+                                                  hintText: 'Senha', 
+                                                  obscured: true, 
+                                                  onChanged: _authBloc.changePassword,
+                                                  errorText: snapshot.error,
+                                                );
+                                              }
                                             ),
 
                                           ],
@@ -370,33 +451,60 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
                                       ),
                                     ),
 
+                                    //Botão de Login
                                     Positioned.fill(
                                       bottom: 15,
                                       child: Align(
                                         alignment: Alignment.bottomCenter,
-                                        child: GestureDetector(
-                                          onTap: () {},
-                                          child: Container(
-                                            alignment: Alignment.center,
-                                            margin: EdgeInsets.only(left: 30, right: 30),
-                                            height: 60,
-                                            width: MediaQuery.of(context).size.width,
-                                            decoration: BoxDecoration(
-                                              color: Colors.transparent,
-                                              border: Border.all(
-                                                width: 1,
-                                                color: ColorConstant.colorMainPurple
-                                              )
-                                            ),
-                                            child: Text(
-                                              'Login',
-                                              style: TextStyle(
-                                                color: ColorConstant.colorMainPurple,
-                                                fontWeight: FontWeight.w400,
-                                                fontSize: 20,
-                                              ),
-                                            ),
-                                          ),
+                                        child: StreamBuilder(
+                                          stream: _authBloc.signInStatus,
+                                          builder: (context, snapshot) {
+                                            bool isLoggedIn = snapshot.data;
+                                            /*
+                                            * verificando se o snapshot não contem nenhum dado ou
+                                            * se contem algum erro ou se é nulo - usuário ainda 
+                                            * não está logado
+                                            */
+                                            if(!snapshot.hasData || snapshot.hasError || !isLoggedIn) {
+                                              return GestureDetector(
+                                                onTap: () async {
+                                                  if(_authBloc.validateEmailAndPassword()) {
+                                                    int response = await _authBloc.loginUser();
+                                                    if(response < 0) {
+                                                      showErrorMessage(StringConstants.emailOrPasswordIncorret);
+                                                    } else {
+                                                      showErrorMessage(StringConstants.fillUpFormCorrectly);
+                                                    }
+                                                  }
+                                                },
+                                                child: Container(
+                                                  alignment: Alignment.center,
+                                                  margin: EdgeInsets.only(left: 30, right: 30),
+                                                  height: 60,
+                                                  width: MediaQuery.of(context).size.width,
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.transparent,
+                                                    border: Border.all(
+                                                      width: 1,
+                                                      color: ColorConstant.colorMainPurple
+                                                    )
+                                                  ),
+                                                  child: Text(
+                                                    'Login',
+                                                    style: TextStyle(
+                                                      color: ColorConstant.colorMainPurple,
+                                                      fontWeight: FontWeight.w400,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                ),
+                                              );
+                                            }else {
+                                              return CircularProgressIndicator(
+                                                backgroundColor: Colors.white,
+                                              );
+                                            }
+                                          }
                                         ),
                                       ),
                                     ),

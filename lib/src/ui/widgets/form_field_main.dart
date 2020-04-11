@@ -11,6 +11,7 @@ class FormFieldMain extends StatelessWidget {
   final String hintText;
   final bool obscured;
   final void Function(void) onChanged;
+  final String errorText;
 
   const FormFieldMain({
     this.key,
@@ -20,7 +21,8 @@ class FormFieldMain extends StatelessWidget {
     @required this.textInputType,
     @required this.hintText,
     @required this.obscured,
-    @required this.onChanged
+    @required this.onChanged, 
+    @required this.errorText
   });
 
   @override
@@ -33,6 +35,7 @@ class FormFieldMain extends StatelessWidget {
         keyboardType: textInputType,
         obscureText: obscured,
         decoration: InputDecoration(
+          errorText: errorText,
           filled: true,
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(
